@@ -1,0 +1,16 @@
+[
+  {
+    "transaction_id": "550e8400-e29b-41d4-a716-446655440000",
+    "account_number": "DE89370400440532013000",
+    "transaction_date": "2025-10-14",
+    "amount": 150000,
+    "currency": "PLN"
+  },
+  {
+    "transaction_id": "550e8400-e29b-41d4-a716-446655440001",
+    "account_number": "DE89370400440532013000",
+    "transaction_date": "2025-10-13",
+    "amount": 20050,
+    "currency": "USD"
+  }
+]

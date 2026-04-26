@@ -16,7 +16,15 @@ final class XmlTransactionFileParser implements TransactionFileParser
             throw new RuntimeException('Unable to read uploaded XML file.');
         }
 
-        $xml = simplexml_load_string($contents, SimpleXMLElement::class, LIBXML_NONET);
+        $previousUseInternalErrors = libxml_use_internal_errors(true);
+        libxml_clear_errors();
+
+        try {
+            $xml = simplexml_load_string($contents, SimpleXMLElement::class, LIBXML_NONET);
+        } finally {
+            libxml_clear_errors();
+            libxml_use_internal_errors($previousUseInternalErrors);
+        }
 
         if ($xml === false) {
             throw new RuntimeException('Malformed XML file.');

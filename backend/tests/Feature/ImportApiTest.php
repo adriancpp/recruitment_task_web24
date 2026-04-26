@@ -65,4 +65,62 @@ CSV;
             'import_id' => $response->json('data.id'),
         ]);
     }
+
+    public function test_partial_csv_from_repo_samples_is_marked_partial_with_logs(): void
+    {
+        $path = $this->samplePath('partial.csv');
+        $this->assertFileExists($path);
+        $content = file_get_contents($path);
+        $this->assertNotFalse($content);
+
+        $file = UploadedFile::fake()->createWithContent('partial.csv', $content);
+        $response = $this->postJson('/api/imports', ['file' => $file]);
+
+        $response->assertCreated();
+        $response->assertJsonPath('data.status', 'partial');
+        $response->assertJsonPath('data.total_records', 2);
+        $response->assertJsonPath('data.successful_records', 1);
+        $response->assertJsonPath('data.failed_records', 1);
+
+        $id = (int) $response->json('data.id');
+        $show = $this->getJson('/api/imports/'.$id);
+        $show->assertOk();
+        $this->assertGreaterThanOrEqual(1, $show->json('logs.meta.total'));
+    }
+
+    public function test_json_upload_from_samples_succeeds(): void
+    {
+        $path = $this->samplePath('valid.json');
+        $this->assertFileExists($path);
+        $file = UploadedFile::fake()->createWithContent('valid.json', (string) file_get_contents($path));
+
+        $response = $this->postJson('/api/imports', ['file' => $file]);
+
+        $response->assertCreated();
+        $response->assertJsonPath('data.status', 'success');
+        $response->assertJsonPath('data.total_records', 2);
+    }
+
+    public function test_xml_upload_from_samples_succeeds(): void
+    {
+        $path = $this->samplePath('valid.xml');
+        $this->assertFileExists($path);
+        $file = UploadedFile::fake()->createWithContent('valid.xml', (string) file_get_contents($path));
+
+        $response = $this->postJson('/api/imports', ['file' => $file]);
+
+        $response->assertCreated();
+        $response->assertJsonPath('data.status', 'success');
+        $response->assertJsonPath('data.total_records', 2);
+    }
+
+    public function test_show_returns_404_for_unknown_import(): void
+    {
+        $this->getJson('/api/imports/999999999')->assertNotFound();
+    }
+
+    public function test_index_accepts_per_page_query(): void
+    {
+        $this->getJson('/api/imports?per_page=5')->assertOk();
+    }
 }
