@@ -2,6 +2,7 @@
 
 namespace App\Services\Import\Validation;
 
+use App\Rules\Iban;
 use Illuminate\Support\Facades\Validator;
 
 final class TransactionRecordValidator
@@ -15,7 +16,7 @@ final class TransactionRecordValidator
             $record,
             [
                 'transaction_id' => ['required', 'uuid'],
-                'account_number' => ['required', 'iban'],
+                'account_number' => ['required', new Iban()],
                 'transaction_date' => ['required', 'date'],
                 'amount' => ['required', 'numeric', 'gt:0'],
                 'currency' => ['required', 'regex:/^[A-Z]{3}$/'],

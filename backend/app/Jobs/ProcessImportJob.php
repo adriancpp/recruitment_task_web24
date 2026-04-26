@@ -5,11 +5,12 @@ namespace App\Jobs;
 use App\Models\Import;
 use App\Services\Import\ImportService;
 use Illuminate\Contracts\Queue\ShouldQueue;
+use Illuminate\Foundation\Bus\Dispatchable;
 use Illuminate\Foundation\Queue\Queueable;
 
 class ProcessImportJob implements ShouldQueue
 {
-    use Queueable;
+    use Dispatchable, Queueable;
 
     public int $timeout = 300;
 

@@ -111,6 +111,8 @@ final class ImportService
                 'status' => 'failed',
             ]);
         });
+
+        Storage::disk('local')->delete($import->storedFileRelativePath());
     }
 
     /**
