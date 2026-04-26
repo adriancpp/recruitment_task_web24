@@ -114,6 +114,19 @@ CSV;
         $response->assertJsonPath('data.total_records', 2);
     }
 
+    public function test_xml_upload_using_real_disk_file_passes_validation(): void
+    {
+        $path = $this->samplePath('valid.xml');
+        $this->assertFileExists($path);
+
+        $file = new UploadedFile($path, 'valid.xml', null, \UPLOAD_ERR_OK, true);
+
+        $response = $this->postJson('/api/imports', ['file' => $file]);
+
+        $response->assertCreated();
+        $response->assertJsonPath('data.status', 'success');
+    }
+
     public function test_show_returns_404_for_unknown_import(): void
     {
         $this->getJson('/api/imports/999999999')->assertNotFound();

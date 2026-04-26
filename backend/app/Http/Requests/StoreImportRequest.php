@@ -5,7 +5,6 @@ namespace App\Http\Requests;
 use App\Support\ImportFileLimits;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Http\UploadedFile;
-use Illuminate\Validation\Validator;
 
 class StoreImportRequest extends FormRequest
 {
@@ -20,7 +19,48 @@ class StoreImportRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'file' => ['required', 'file', 'max:'.ImportFileLimits::MAX_KILOBYTES],
+            'file' => [
+                'required',
+                'file',
+                'max:'.ImportFileLimits::MAX_KILOBYTES,
+                function (string $attribute, mixed $value, \Closure $fail): void {
+                    if (! $value instanceof UploadedFile) {
+                        return;
+                    }
+
+                    $extension = strtolower($value->getClientOriginalExtension());
+
+                    if (! in_array($extension, ['csv', 'json', 'xml'], true)) {
+                        $fail('The file must be a csv, json, or xml file.');
+
+                        return;
+                    }
+
+                    $mime = $this->normalizedMimeType((string) $value->getMimeType());
+                    if ($mime === '') {
+                        $mime = $this->normalizedMimeType((string) $value->getClientMimeType());
+                    }
+
+                    // finfo often returns text/plain for JSON/XML without declaration or small payloads;
+                    // Windows CSV is frequently application/vnd.ms-excel.
+                    $allowedByExtension = [
+                        'csv' => [
+                            'text/csv', 'text/plain', 'application/csv', 'application/octet-stream',
+                            'application/vnd.ms-excel',
+                        ],
+                        'json' => [
+                            'application/json', 'text/json', 'application/octet-stream', 'text/plain',
+                        ],
+                        'xml' => [
+                            'application/xml', 'text/xml', 'application/octet-stream', 'text/plain',
+                        ],
+                    ];
+
+                    if (! in_array($mime, $allowedByExtension[$extension], true)) {
+                        $fail('The file MIME type is not allowed for this file type.');
+                    }
+                },
+            ],
         ];
     }
 
@@ -38,20 +78,13 @@ class StoreImportRequest extends FormRequest
         ];
     }
 
-    public function withValidator(Validator $validator): void
+    private function normalizedMimeType(string $mime): string
     {
-        $validator->after(function (Validator $validator): void {
-            $file = $this->file('file');
+        $mime = strtolower(trim($mime));
+        if ($mime === '') {
+            return '';
+        }
 
-            if (! $file instanceof UploadedFile) {
-                return;
-            }
-
-            $extension = strtolower($file->getClientOriginalExtension());
-
-            if (! in_array($extension, ['csv', 'json', 'xml'], true)) {
-                $validator->errors()->add('file', 'The file must be a csv, json, or xml file.');
-            }
-        });
+        return trim(explode(';', $mime, 2)[0]);
     }
 }

@@ -13,7 +13,6 @@ return new class extends Migration
     {
         Schema::create('transactions', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('import_id')->constrained('imports')->cascadeOnDelete();
             $table->uuid('transaction_id');
             $table->string('account_number');
             $table->date('transaction_date');
@@ -21,7 +20,6 @@ return new class extends Migration
             $table->char('currency', 3);
             $table->timestamp('created_at')->useCurrent();
 
-            $table->index('import_id');
             $table->index('transaction_id');
         });
     }

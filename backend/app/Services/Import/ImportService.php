@@ -76,7 +76,6 @@ final class ImportService
                     if ($validated->isValid()) {
                         try {
                             Transaction::query()->create([
-                                'import_id' => $import->id,
                                 'transaction_id' => $validated->data['transaction_id'],
                                 'account_number' => $validated->data['account_number'],
                                 'transaction_date' => Carbon::parse($validated->data['transaction_date'])->toDateString(),

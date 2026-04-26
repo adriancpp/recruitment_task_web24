@@ -25,11 +25,6 @@ class Import extends Model
         'created_at' => 'datetime',
     ];
 
-    public function transactions(): HasMany
-    {
-        return $this->hasMany(Transaction::class);
-    }
-
     public function importLogs(): HasMany
     {
         return $this->hasMany(ImportLog::class);
