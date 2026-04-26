@@ -52,4 +52,17 @@ CSV;
         $show->assertJsonPath('import.id', $importId);
         $show->assertJsonPath('logs.meta.total', 0);
     }
+
+    public function test_malformed_json_file_marks_import_as_failed_without_http_500(): void
+    {
+        $file = UploadedFile::fake()->createWithContent('bad.json', '{ not valid json');
+
+        $response = $this->postJson('/api/imports', ['file' => $file]);
+
+        $response->assertCreated();
+        $response->assertJsonPath('data.status', 'failed');
+        $this->assertDatabaseHas('import_logs', [
+            'import_id' => $response->json('data.id'),
+        ]);
+    }
 }

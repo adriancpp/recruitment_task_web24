@@ -13,6 +13,7 @@ use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
 use Illuminate\Support\Facades\Bus;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 use Throwable;
 
 final class ImportController extends Controller
@@ -53,10 +54,18 @@ final class ImportController extends Controller
             // Synchronicznie: od razu finalny `status` w odpowiedzi. Na produkcji z workerem zamień na `ProcessImportJob::dispatch(...)`.
             Bus::dispatchSync(new ProcessImportJob($import->id));
         } catch (Throwable $exception) {
+            Log::error('import.job_failed', [
+                'import_id' => $import->id,
+                'exception' => $exception::class,
+                'message' => $exception->getMessage(),
+            ]);
+
             report($exception);
 
             return response()->json([
-                'message' => 'Import processing failed.',
+                'message' => app()->hasDebugModeEnabled()
+                    ? $exception->getMessage()
+                    : 'Import processing failed.',
             ], 500);
         }
 
