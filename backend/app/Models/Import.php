@@ -34,4 +34,12 @@ class Import extends Model
     {
         return $this->hasMany(ImportLog::class);
     }
+
+    /**
+     * Ścieżka względem dysku `local` (bez dodatkowej kolumny w DB — zgodnie ze specyfikacją tabeli `imports`).
+     */
+    public function storedFileRelativePath(): string
+    {
+        return 'imports/'.$this->id.'/'.basename($this->file_name);
+    }
 }
